@@ -21,3 +21,21 @@ def setup_logger(name='app', level='INFO'):
 
     logger.addHandler(handler)
     return logger
+
+def format_pokemon_name(name: str) -> str:
+    """
+    Formata nomes como 'charizard-mega-y' para 'Charizard Mega Y'
+    """
+    return name.replace("-", " ").title()
+
+# utils.py (complemento no final do arquivo)
+
+import requests
+
+def get_all_pokemon_names():
+    """
+    Retorna uma lista com todos os nomes de Pokémon da PokéAPI, ordenados.
+    """
+    url = "https://pokeapi.co/api/v2/pokemon?limit=10000"
+    response = requests.get(url).json()
+    return sorted([p["name"] for p in response["results"]])

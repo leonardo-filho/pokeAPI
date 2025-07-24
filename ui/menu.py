@@ -1,31 +1,24 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
 
 def menu_sidebar():
-    with st.sidebar:
-        escolha = option_menu(
-            menu_title="🔍 PokéDex",
-            options=["Consulta Pokémon", "Evoluções"],
-            icons=["search", "diagram-3"],
-            menu_icon="cast",
-            default_index=0,
-            styles={
-                "container": {
-                    "padding": "5px",
-                    "background-color": "#2a2a2a"
-                },
-                "icon": {"color": "yellow", "font-size": "18px"},
-                "nav-link": {
-                    "color": "white",
-                    "font-size": "16px",
-                    "text-align": "left",
-                    "margin": "5px",
-                    "border-radius": "5px"
-                },
-                "nav-link-selected": {
-                    "background-color": "#3f51b5",  # tom azul
-                    "color": "white"
-                }
-            }
-        )
-    return escolha
+    st.sidebar.markdown("<h3 style='font-size:20px;'>🌐 Idioma</h3>", unsafe_allow_html=True)
+    lang = st.sidebar.radio("", options=["pt", "en"], horizontal=True)
+
+    traducoes = {
+        "pt": {
+            "consulta": "🔍 Consulta Pokémon",
+            "evolucao": "🧬 Evoluções"
+        },
+        "en": {
+            "consulta": "🔍 Pokémon Search",
+            "evolucao": "🧬 Evolutions"
+        }
+    }
+
+    paginas = traducoes[lang]
+
+    st.sidebar.markdown("---")
+    pagina_traduzida = st.sidebar.radio("", list(paginas.values()))
+
+    id_paginas = {v: k for k, v in paginas.items()}
+    return id_paginas[pagina_traduzida], lang
