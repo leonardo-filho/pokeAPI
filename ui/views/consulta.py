@@ -1,6 +1,7 @@
 import streamlit as st
 from app import api_client
-from app.type_matchup import calcular_fraquezas_resistencias
+from app.type_matchup import calcular_fraquezas_resistencias, calcular_forte_contra
+from app.utils import format_pokemon_name
 
 # Traduções e cores
 TIPO_TRADUZIDO = {
@@ -50,7 +51,6 @@ def mostrar(lang):
 
             st.markdown("<hr>", unsafe_allow_html=True)
 
-            # Card do Pokémon com tipos coloridos
             st.markdown(f"""
                 <div style="background-color: #1f1f1f; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 0 15px #111; max-width: 350px; margin: auto;">
                     <img src="{img_url}" width="160">
@@ -62,9 +62,27 @@ def mostrar(lang):
             st.markdown("<hr>", unsafe_allow_html=True)
 
             efetividades = calcular_fraquezas_resistencias(tipos_en, api_client)
+            forte_contra = calcular_forte_contra(tipos_en, api_client)
+
             efetividades = {k: traduzir_tipos(v, lang) for k, v in efetividades.items()}
+            forte_contra = traduzir_tipos(forte_contra, lang)
+
+            # Novo cálculo: tipos que esse Pokémon não causa dano
+            nao_causa_dano = set()
+            for tipo in tipos_en:
+                tipo_data = api_client.get_type(tipo)
+                if "damage_relations" in tipo_data:
+                    nao_causa_dano.update([t["name"] for t in tipo_data["damage_relations"]["no_damage_to"]])
+            nao_causa_dano = traduzir_tipos(nao_causa_dano, lang)
 
             def render_card(lista, titulo, emoji):
+                if not lista:
+                    return f"""
+                        <div style="background-color: #2e2e2e; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                            <h5 style="color: white;">{emoji} {titulo}</h5>
+                            <p style="color: #aaa; margin-top: 10px;">(Não tem)</p>
+                        </div>
+                    """
                 return f"""
                     <div style="background-color: #2e2e2e; padding: 20px; border-radius: 10px; margin-top: 20px;">
                         <h5 style="color: white;">{emoji} {titulo}</h5>
@@ -74,11 +92,21 @@ def mostrar(lang):
                     </div>
                 """
 
-            col_f, col_r = st.columns(2)
-            with col_f:
+            # Linha 1
+            col1, col2 = st.columns(2)
+            with col1:
                 st.markdown(render_card(efetividades["fraco"], "Fraquezas" if lang == "pt" else "Weaknesses", "⚡"), unsafe_allow_html=True)
-            with col_r:
+            with col2:
                 st.markdown(render_card(efetividades["resistente"], "Resistências" if lang == "pt" else "Resistances", "🛡️"), unsafe_allow_html=True)
 
-            if efetividades["imune"]:
-                st.markdown(render_card(efetividades["imune"], "Imunes" if lang == "pt" else "Immunities", "🚫"), unsafe_allow_html=True)
+            # Linha 2
+            col3, col4 = st.columns(2)
+            with col3:
+                st.markdown(render_card(efetividades["imune"], "Imune" if lang == "pt" else "Immunities", "🚫"), unsafe_allow_html=True)
+            with col4:
+                st.markdown(render_card(forte_contra, "É forte contra" if lang == "pt" else "Strong Against", "🔥"), unsafe_allow_html=True)
+
+            # Linha 3 – Nova seção
+            col5, col6 = st.columns(2)
+            with col5:
+                st.markdown(render_card(nao_causa_dano, "Não causa dano em" if lang == "pt" else "Doesn't affect", "🔇"), unsafe_allow_html=True)

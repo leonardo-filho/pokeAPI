@@ -50,3 +50,24 @@ TYPE_COLORS = {
     "steel": "#B7B7CE",
     "fairy": "#D685AD",
 }
+
+def calcular_forte_contra(types_list, api_client):
+    """
+    Retorna os tipos contra os quais o Pokémon é forte (dá dano dobrado).
+
+    Args:
+        types_list (list): Exemplo: ["fire", "flying"]
+        api_client (module): Módulo que contém a função get_type.
+
+    Returns:
+        set: tipos que recebem dano dobrado do Pokémon
+    """
+    forte_contra = set()
+
+    for tipo in types_list:
+        data = api_client.get_type(tipo)
+        if "damage_relations" in data:
+            relacoes = data["damage_relations"]
+            forte_contra.update([t["name"] for t in relacoes["double_damage_to"]])
+
+    return forte_contra
