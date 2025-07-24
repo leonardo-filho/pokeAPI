@@ -7,3 +7,6 @@ class Config:
     API_URL = os.getenv("API_URL")
     API_KEY = os.getenv("API_KEY")
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
+
+PRIMARY_COLOR = "#38bdf8"
